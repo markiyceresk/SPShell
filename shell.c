@@ -29,6 +29,8 @@ struct termios oldt, newt;
 short ns;
 
 int main() {
+	char h[128] = "/home/";
+	strcat(h, getlogin());
 	setvbuf(stdout, NULL, _IONBF, 0);
 	// write os id to variable "endi"
 	FILE *fidi = fopen("/etc/os-release", "r");
@@ -56,7 +58,7 @@ int main() {
 	printf("\033[37m\033[40m|_______\033[37m\033[44m________\033[37m\033[40m_______|\033[0m\n");
 
 	// print greeting
-	printf("\nHi, %s!\nWhat would you do?\n\n", getlogin());
+	printf("\n!!! НЕТ ВОЙНЕ !!!\n\nHi, %s!\nWhat would you do?\n\n", getlogin());
 
 
 	// =============================== MAIN CYCLE ===============================
@@ -97,7 +99,11 @@ int main() {
 
 	// command cd (change directory)
 	} else if (strncmp(cmd, "cd", 2) == 0) {
-	    chdir(cmd + 3);
+	    if (strncmp(cmd + 3, "~", 1) == 0) {
+		chdir(h);
+	    } else {
+	        chdir(cmd + 3);
+	    }
 
 	// command sus
 	} else if (strncmp(cmd, "sus", 3) == 0) {
@@ -203,5 +209,6 @@ int main() {
 	// clear memory
 	free(cmd);
     }
+    printf("\n");
     return 0;
 }
