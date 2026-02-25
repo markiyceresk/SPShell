@@ -25,6 +25,8 @@ short rnew;
 short cch;
 int sch;
 char usin[128];
+struct termios oldt, newt;
+short ns;
 
 int main() {
 	setvbuf(stdout, NULL, _IONBF, 0);
@@ -64,9 +66,19 @@ int main() {
 	// ----- greeting block -----
 
 	// print greeting
+	struct termios oldt, newt;
+    	int rows = 0, cols = 0;
+        tcgetattr(STDIN_FILENO, &oldt);
+        newt = oldt;
+        newt.c_lflag &= ~(ICANON | ECHO);
+        tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+        write(STDOUT_FILENO, "\033[6n", 4);
+	scanf("\033[%d;%dR", &rows, &cols);
+	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    	if (cols > 1) printf("\n");
 	gethostname(hostname, HOST_NAME_MAX);
 	getcwd(cwd, sizeof(cwd));
-	snprintf(prm, sizeof(prm), "\n%s | %s | %s $ ", getlogin(), hostname, cwd);
+	snprintf(prm, sizeof(prm), "%s | %s | %s $ ", getlogin(), hostname, cwd);
 
 	// input command
 	cmd = readline(prm);
