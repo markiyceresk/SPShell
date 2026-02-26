@@ -105,6 +105,14 @@ int main() {
 	        chdir(cmd + 3);
 	    }
 
+	// command help (have -s flag)
+	} else if (strncmp(cmd, "help", 4) == 0) {
+	    if (strncmp(cmd + 5, "-s", 2) == 0) {
+		printf("sus, hi, potato, news, I am not a moron!");
+	    } else {
+		printf("q - quit\ncd <arguments> - change directory\ninst <arguments> - install packet from packet manager (Only Arch, Gentoo, Debian, Ubuntu, and Fedora are supported)\nua - full system update (Only the previously listed distributions are supported)\nrps - rock paper scissors\nhelp - use '-s' flag to see references :)");
+	    }
+
 	// command sus
 	} else if (strncmp(cmd, "sus", 3) == 0) {
 	    printf("This looks kinda SUS...");
