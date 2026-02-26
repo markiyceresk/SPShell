@@ -229,6 +229,7 @@ int main() {
             printf("potato -- print word potato in russian 4 times\n");
             printf("news -- print a random news title (not real)\n");
             printf("I am not a moron! -- print 'Yes, you are!!!' 'You are the moron, they built to make me an idiot!'\n");
+        }
         else {
             printf("other commands are:  sus   hi   potato   news   I am not a moron!\n");
             printf("\nTo see spoilers to commands write 'help --with-spoilers'\n");
