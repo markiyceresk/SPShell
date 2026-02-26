@@ -211,7 +211,7 @@ int main() {
 	    }
 	    system(incm);
 
-	// command fu (update all)
+	// command au (update all)
 	} else if (strncmp(cmd, "ua", 2) == 0) {
 	    if (strncmp(endi, "arch", 4) == 0) {
 		system("sudo pacman -Syu"); // ARCH
