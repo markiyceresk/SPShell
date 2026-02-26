@@ -58,7 +58,7 @@ int main() {
 	printf("\033[37m\033[40m|_______\033[37m\033[44m________\033[37m\033[40m_______|\033[0m\n");
 
 	// print greeting
-	printf("\n!!! НЕТ ВОЙНЕ !!!\n\nHi, %s!\nWhat would you do?\n For list of command write 'help'\n\n", getlogin());
+	printf("\n!!! НЕТ ВОЙНЕ !!!\n\nHi, %s!\nWhat would you do?\n\n", getlogin());
 
 
 	// =============================== MAIN CYCLE ===============================
@@ -96,25 +96,33 @@ int main() {
 	    printf("\n");
 	    free(cmd);
 	    break;
-    }
+
 	// command cd (change directory)
-	else if (strncmp(cmd, "cd", 2) == 0) {
+	} else if (strncmp(cmd, "cd", 2) == 0) {
 	    if (strncmp(cmd + 3, "~", 1) == 0) {
 		chdir(h);
 	    } else {
 	        chdir(cmd + 3);
 	    }
-    }
+
+	// command help (have -s flag)
+	} else if (strncmp(cmd, "help", 4) == 0) {
+	    if (strncmp(cmd + 5, "-s", 2) == 0) {
+		printf("sus, hi, potato, news, I am not a moron!");
+	    } else {
+		printf("q - quit\ncd <arguments> - change directory\ninst <arguments> - install packet from packet manager (Only Arch, Cachy, Gentoo, Debian, Ubuntu, and Fedora are supported)\nua - full system update (Only the previously listed distributions are supported)\nrps - rock paper scissors\nhelp - use '-s' flag to see references :)");
+	    }
+
 	// command sus
-	else if (strncmp(cmd, "sus", 3) == 0) {
+	} else if (strncmp(cmd, "sus", 3) == 0) {
 	    printf("This looks kinda SUS...");
-    }
+
 	// command hi
-	else if (strncmp(cmd, "hi", 2) == 0) {
+	} else if (strncmp(cmd, "hi", 2) == 0) {
 		printf("Hello!");
-    }
+
 	// command news
-	else if (strncmp(cmd, "news", 4) == 0) {
+	} else if (strncmp(cmd, "news", 4) == 0) {
 		srand(time(NULL));
 		rnew = rand() % 10;
 		switch (rnew) {
@@ -149,9 +157,9 @@ int main() {
 				printf("Cheese ball.");
 				break;
 		}
-    }
+
 	// command rps (rock paper scissors)
-	else if (strncmp(cmd, "rps", 3) == 0) {
+	} else if (strncmp(cmd, "rps", 3) == 0) {
 	    struct termios t;
 	    int sch = 0, cch, u;
             char b;
@@ -174,23 +182,23 @@ int main() {
 		printf(" | Score: %d\n\n", sch);
 	    }
 	    tcsetattr(0, TCSANOW, &t);
-    }
+
 	// command I am not a moron (reference to portal 2)
-	else if (strncmp(cmd, "I am not a moron!", 17) == 0) {
+	} else if (strncmp(cmd, "I am not a moron!", 17) == 0) {
 	    printf("Yes, you are!!!\n");
 	    sleep(1);
 	    printf("You are the moron, they built to make me an idiot!");
-    }
+
 	// command potato (reference to PWGood)
-	else if (strncmp(cmd, "potato", 6) == 0) {
+	} else if (strncmp(cmd, "potato", 6) == 0) {
 	    printf("Картошка!\n");
 	    sleep(1);
 	    printf("картошка\nкартошка\nкартошка!");
-    }
+
 	// command inst (install)
-	else if (strncmp(cmd, "inst", 4) == 0) {
+	} else if (strncmp(cmd, "inst", 4) == 0) {
 	    char incm[256];
-	    if (strncmp(endi, "arch", 4) == 0) {
+	    if (strncmp(endi, "arch", 4) == 0 || strncmp(endi, "cachyos", 7)) {
                 sprintf(incm, "sudo pacman -S %s", (cmd + 5)); // ARCH
             } else if (strncmp(endi, "ubuntu", 6) == 0 || strncmp(endi, "debian", 6) == 0) {
                 sprintf(incm, "sudo apt install %s", (cmd + 5)); // UBUNTU or DEBIAN
@@ -202,11 +210,11 @@ int main() {
 		break;
 	    }
 	    system(incm);
-    }
+
 	// command ua (update all)
-	else if (strncmp(cmd, "ua", 2) == 0) {
-	    if (strncmp(endi, "arch", 4) == 0) {
-		system("sudo pacman -Syu"); // ARCH
+	} else if (strncmp(cmd, "ua", 2) == 0) {
+	    if (strncmp(endi, "arch", 4) == 0 || strncmp(endi, "cachyos", 7)) {
+		system("sudo pacman -Syu"); // ARCH or CACHY
 	    } else if (strncmp(endi, "ubuntu", 6) == 0 || strncmp(endi, "debian", 6) == 0) {
 		system("sudo apt update"); // UBUNTU or DEBIAN
 	    } else if (strncmp(endi, "gentoo", 6) == 0) {
@@ -215,28 +223,9 @@ int main() {
 	    } else if (strncmp(endi, "fedora", 6) == 0) {
 		system("sudo dnf upgrade --refresh"); // FEDORA
 	    }
-    }
-    // command help (display all commands)
-    else if (strncmp(cmd, "help", 4) == 0){
-        printf("q -- quit from the program\n");
-        printf("cd <argument> -- change working directory to <argument>\n");
-        printf("inst <arguments> -- install packet with packet manager for current OS\n");
-        printf("ua -- update all outdated packets\n");
-        printf("rps -- play rock paper scissors with random computer output\n");
-        if (strncmp(cmd + 5, "--with-spoilers", 15) == 0){
-            printf("sus -- print 'This looks kinda sus...'\n");
-            printf("hi -- print 'Hello!'\n");
-            printf("potato -- print word potato in russian 4 times\n");
-            printf("news -- print a random news title (not real)\n");
-            printf("I am not a moron! -- print 'Yes, you are!!!' 'You are the moron, they built to make me an idiot!'\n");
-        }
-        else {
-            printf("other commands are:  sus   hi   potato   news   I am not a moron!\n");
-            printf("\nTo see spoilers to commands write 'help --with-spoilers'\n");
-        }
-    }
-	// other commands are redirected to the OS
-	else {
+
+	// other commands are redirected by the OS
+	} else {
 	    system(cmd);
 	}
 
