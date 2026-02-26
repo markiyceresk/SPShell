@@ -110,7 +110,7 @@ int main() {
 	    if (strncmp(cmd + 5, "-s", 2) == 0) {
 		printf("sus, hi, potato, news, I am not a moron!");
 	    } else {
-		printf("q - quit\ncd <arguments> - change directory\ninst <arguments> - install packet from packet manager (Only Arch, Cachy, Gentoo, Debian, Ubuntu, and Fedora are supported)\nua - full system update (Only the previously listed distributions are supported)\nrps - rock paper scissors\nhelp - use '-s' flag to see references :)");
+		printf("q - quit\ncd <arguments> - change directory\ninst <arguments> - install packet from packet manager (Only Arch based, Gentoo, Debian based, and Fedora are supported)\nua - full system update (Only the previously listed distributions are supported)\nrps - rock paper scissors\nhelp - use '-s' flag to see references :)");
 	    }
 
 	// command sus
