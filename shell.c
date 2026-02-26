@@ -110,7 +110,7 @@ int main() {
 	    if (strncmp(cmd + 5, "-s", 2) == 0) {
 		printf("sus, hi, potato, news, I am not a moron!");
 	    } else {
-		printf("q - quit\ncd <arguments> - change directory\ninst <arguments> - install packet from packet manager (Only Arch, Gentoo, Debian, Ubuntu, and Fedora are supported)\nua - full system update (Only the previously listed distributions are supported)\nrps - rock paper scissors\nhelp - use '-s' flag to see references :)");
+		printf("q - quit\ncd <arguments> - change directory\ninst <arguments> - install packet from packet manager (Only Arch, Cachy, Gentoo, Debian, Ubuntu, and Fedora are supported)\nua - full system update (Only the previously listed distributions are supported)\nrps - rock paper scissors\nhelp - use '-s' flag to see references :)");
 	    }
 
 	// command sus
@@ -198,7 +198,7 @@ int main() {
 	// command inst (install)
 	} else if (strncmp(cmd, "inst", 4) == 0) {
 	    char incm[256];
-	    if (strncmp(endi, "arch", 4) == 0) {
+	    if (strncmp(endi, "arch", 4) == 0 || strncmp(endi, "cachyos", 7)) {
                 sprintf(incm, "sudo pacman -S %s", (cmd + 5)); // ARCH
             } else if (strncmp(endi, "ubuntu", 6) == 0 || strncmp(endi, "debian", 6) == 0) {
                 sprintf(incm, "sudo apt install %s", (cmd + 5)); // UBUNTU or DEBIAN
@@ -211,10 +211,10 @@ int main() {
 	    }
 	    system(incm);
 
-	// command au (update all)
+	// command ua (update all)
 	} else if (strncmp(cmd, "ua", 2) == 0) {
-	    if (strncmp(endi, "arch", 4) == 0) {
-		system("sudo pacman -Syu"); // ARCH
+	    if (strncmp(endi, "arch", 4) == 0 || strncmp(endi, "cachyos", 7)) {
+		system("sudo pacman -Syu"); // ARCH or CACHY
 	    } else if (strncmp(endi, "ubuntu", 6) == 0 || strncmp(endi, "debian", 6) == 0) {
 		system("sudo apt update"); // UBUNTU or DEBIAN
 	    } else if (strncmp(endi, "gentoo", 6) == 0) {
