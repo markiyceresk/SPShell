@@ -152,54 +152,69 @@ int main() {
 
 	// command rps (rock paper scissors)
 	} else if (strncmp(cmd, "rps", 3) == 0) {
-		struct termios t;
-		int sch = 0, cch, u;
-		char b;
-		tcgetattr(0, &t);
-		struct termios n = t;
-		n.c_lflag &= ~(ICANON | ECHO);
-		tcsetattr(0, TCSANOW, &n);
-		srand(time(0));
-		while (printf("1. Rock\n2. Paper\n3. Scissors\n4. Quit\n") && read(0, &b, 1) && b != '4') {
-			u = b - '0';
-			cch = rand() % 3 + 1;
-			printf("\nComputer: ");
-			if (cch == 1) printf("rock");
-			if (cch == 2) printf("paper");
-			if (cch == 3) printf("scissors");
-			printf(" | ");
-			if (u == cch) printf("Draw");
-			else if ((u % 3) + 1 == cch) { printf("You lost"); sch--; }
-			else { printf("You won"); sch++; }
-			printf(" | Score: %d\n\n", sch);
-		}
-
-		tcsetattr(0, TCSANOW, &t);
+	    struct termios t;
+	    int sch = 0, cch, u;
+            char b;
+	    tcgetattr(0, &t);
+	    struct termios n = t;
+	    n.c_lflag &= ~(ICANON | ECHO);
+	    tcsetattr(0, TCSANOW, &n);
+	    srand(time(0));
+	    while (printf("1. Rock\n2. Paper\n3. Scissors\n4. Quit\n") && read(0, &b, 1) && b != '4') {
+		u = b - '0';
+		cch = rand() % 3 + 1;
+		printf("\nComputer: ");
+		if (cch == 1) printf("rock");
+		if (cch == 2) printf("paper");
+		if (cch == 3) printf("scissors");
+		printf(" | ");
+		if (u == cch) printf("Draw");
+		else if ((u % 3) + 1 == cch) { printf("You lost"); sch--; }
+		else { printf("You won"); sch++; }
+		printf(" | Score: %d\n\n", sch);
+	    }
+	    tcsetattr(0, TCSANOW, &t);
 
 	// command I am not a moron (reference to portal 2)
 	} else if (strncmp(cmd, "I am not a moron!", 17) == 0) {
-		printf("Yes, you are!!!\n");
-		sleep(1);
-		printf("You are the moron, they built to make me an idiot!");
+	    printf("Yes, you are!!!\n");
+	    sleep(1);
+	    printf("You are the moron, they built to make me an idiot!");
 
 	// command potato (reference to PWGood)
 	} else if (strncmp(cmd, "potato", 6) == 0) {
-		printf("Картошка!\n");
-		sleep(1);
-		printf("картошка\nкартошка\nкартошка!");
+	    printf("Картошка!\n");
+	    sleep(1);
+	    printf("картошка\nкартошка\nкартошка!");
+
+	// command inst (install)
+	} else if (strncmp(cmd, "inst", 4) == 0) {
+	    char incm[256];
+	    if (strncmp(endi, "arch", 4) == 0) {
+                sprintf(incm, "sudo pacman -S %s", (cmd + 5)); // ARCH
+            } else if (strncmp(endi, "ubuntu", 6) == 0 || strncmp(endi, "debian", 6) == 0) {
+                sprintf(incm, "sudo apt install %s", (cmd + 5)); // UBUNTU or DEBIAN
+            } else if (strncmp(endi, "gentoo", 6) == 0) {
+                sprintf(incm, "sudo emerge --ask %s", (cmd + 5)); // GENTOO
+            } else if (strncmp(endi, "fedora", 6) == 0) {
+                sprintf(incm, "sudo dnf install %s", (cmd + 5)); // FEDORA
+            } else {
+		break;
+	    }
+	    system(incm);
 
 	// command fu (update all)
 	} else if (strncmp(cmd, "ua", 2) == 0) {
-		if (strncmp(endi, "arch", 4) == 0) {
-		    system("sudo pacman -Syu"); // ARCH
-		} else if (strncmp(endi, "ubuntu", 6) == 0 || strncmp(endi, "debian", 6) == 0) {
-			system("sudo apt update"); // UBUNTU or DEBIAN
-		} else if (strncmp(endi, "gentoo", 6) == 0) {
-		    system("sudo emerge --sync"); // GENTOO
-			system("sudo emerge -avuDN @world");
-		} else if (strncmp(endi, "fedora", 6) == 0) {
-			system("sudo dnf upgrade --refresh"); // FEDORA
-		}
+	    if (strncmp(endi, "arch", 4) == 0) {
+		system("sudo pacman -Syu"); // ARCH
+	    } else if (strncmp(endi, "ubuntu", 6) == 0 || strncmp(endi, "debian", 6) == 0) {
+		system("sudo apt update"); // UBUNTU or DEBIAN
+	    } else if (strncmp(endi, "gentoo", 6) == 0) {
+		system("sudo emerge --sync"); // GENTOO
+		system("sudo emerge -avuDN @world");
+	    } else if (strncmp(endi, "fedora", 6) == 0) {
+		system("sudo dnf upgrade --refresh"); // FEDORA
+	    }
 
 	// other commands are redirected by the OS
 	} else {
