@@ -198,24 +198,24 @@ int main() {
 	// command inst (install)
 	} else if (strncmp(cmd, "inst", 4) == 0) {
 	    char incm[256];
-	    if (strncmp(endi, "arch", 4) == 0 || strncmp(endi, "cachyos", 7)) {
+	    if (strncmp(endi, "arch", 4) == 0 || strncmp(endi + 5, "arch", 4)) {
                 sprintf(incm, "sudo pacman -S %s", (cmd + 5)); // ARCH
-            } else if (strncmp(endi, "ubuntu", 6) == 0 || strncmp(endi, "debian", 6) == 0) {
+            } else if (strncmp(endi + 5, "debian", 6) == 0 || strncmp(endi, "debian", 6) == 0) {
                 sprintf(incm, "sudo apt install %s", (cmd + 5)); // UBUNTU or DEBIAN
             } else if (strncmp(endi, "gentoo", 6) == 0) {
                 sprintf(incm, "sudo emerge --ask %s", (cmd + 5)); // GENTOO
             } else if (strncmp(endi, "fedora", 6) == 0) {
                 sprintf(incm, "sudo dnf install %s", (cmd + 5)); // FEDORA
             } else {
-		break;
+		continue;
 	    }
 	    system(incm);
 
 	// command ua (update all)
 	} else if (strncmp(cmd, "ua", 2) == 0) {
-	    if (strncmp(endi, "arch", 4) == 0 || strncmp(endi, "cachyos", 7)) {
+	    if (strncmp(endi, "arch", 4) == 0 || strncmp(endi + 5, "arch", 4)) {
 		system("sudo pacman -Syu"); // ARCH or CACHY
-	    } else if (strncmp(endi, "ubuntu", 6) == 0 || strncmp(endi, "debian", 6) == 0) {
+	    } else if (strncmp(endi + 5, "debian", 6) == 0 || strncmp(endi, "debian", 6) == 0) {
 		system("sudo apt update"); // UBUNTU or DEBIAN
 	    } else if (strncmp(endi, "gentoo", 6) == 0) {
 		system("sudo emerge --sync"); // GENTOO
@@ -223,6 +223,23 @@ int main() {
 	    } else if (strncmp(endi, "fedora", 6) == 0) {
 		system("sudo dnf upgrade --refresh"); // FEDORA
 	    }
+
+	// command del (delete)
+	} else if (strncmp(cmd, "del", 3) == 0) {
+		char incm[256];
+		if (strncmp(endi, "arch", 4) == 0 || strncmp(endi + 5, "arch", 4)) {
+			sprintf(incm, "sudo pacman -R %s", (cmd + 4)); // ARCH
+		} else if (strncmp(endi + 5, "debian", 6) == 0 || strncmp(endi, "debian", 6) == 0) {
+			sprintf(incm, "sudo apt remove %s", (cmd + 4)); // UBUNTU or DEBIAN
+		} else if (strncmp(endi, "gentoo", 6) == 0) {
+			sprintf(incm, "sudo emerge --deselect %s", (cmd + 4)); // GENTOO
+		} else if (strncmp(endi, "fedora", 6) == 0) {
+			sprintf(incm, "sudo dnf remove %s", (cmd + 4)); // FEDORA
+		} else {
+			continue;
+		}
+		system(incm);
+		if (strncmp(endi, "gentoo", 6) == 0) system("emerge --depclean");
 
 	// other commands are redirected by the OS
 	} else {
