@@ -14,6 +14,7 @@
 #include <stdbool.h>
 #include <time.h>
 #include <termios.h>
+#include <sys/wait.h>
 
 char cwd[512];
 char prm[512];
@@ -27,6 +28,9 @@ int sch;
 char usin[128];
 struct termios oldt, newt;
 short ns;
+char *lsar[128];
+short li;
+char *mdar[128];
 
 int main() {
 	char h[128] = "/home/";
@@ -198,7 +202,7 @@ int main() {
 	// command inst (install)
 	} else if (strncmp(cmd, "inst", 4) == 0) {
 	    char incm[256];
-	    if (strncmp(endi, "arch", 4) == 0 || strncmp(endi + 5, "arch", 4)) {
+	    if (strncmp(endi, "arch", 4) == 0 || strncmp(endi + 5, "arch", 4) == 0) {
                 sprintf(incm, "sudo pacman -S %s", (cmd + 5)); // ARCH
             } else if (strncmp(endi + 5, "debian", 6) == 0 || strncmp(endi, "debian", 6) == 0) {
                 sprintf(incm, "sudo apt install %s", (cmd + 5)); // UBUNTU or DEBIAN
@@ -213,7 +217,7 @@ int main() {
 
 	// command ua (update all)
 	} else if (strncmp(cmd, "ua", 2) == 0) {
-	    if (strncmp(endi, "arch", 4) == 0 || strncmp(endi + 5, "arch", 4)) {
+	    if (strncmp(endi, "arch", 4) == 0 || strncmp(endi + 5, "arch", 4) == 0) {
 		system("sudo pacman -Syu"); // ARCH or CACHY
 	    } else if (strncmp(endi + 5, "debian", 6) == 0 || strncmp(endi, "debian", 6) == 0) {
 		system("sudo apt update"); // UBUNTU or DEBIAN
@@ -226,20 +230,49 @@ int main() {
 
 	// command del (delete)
 	} else if (strncmp(cmd, "del", 3) == 0) {
-		char incm[256];
-		if (strncmp(endi, "arch", 4) == 0 || strncmp(endi + 5, "arch", 4)) {
-			sprintf(incm, "sudo pacman -R %s", (cmd + 4)); // ARCH
-		} else if (strncmp(endi + 5, "debian", 6) == 0 || strncmp(endi, "debian", 6) == 0) {
-			sprintf(incm, "sudo apt remove %s", (cmd + 4)); // UBUNTU or DEBIAN
-		} else if (strncmp(endi, "gentoo", 6) == 0) {
-			sprintf(incm, "sudo emerge --deselect %s", (cmd + 4)); // GENTOO
-		} else if (strncmp(endi, "fedora", 6) == 0) {
-			sprintf(incm, "sudo dnf remove %s", (cmd + 4)); // FEDORA
+	    char incm[256];
+	    if (strncmp(endi, "arch", 4) == 0 || strncmp(endi + 5, "arch", 4) == 0) {
+		sprintf(incm, "sudo pacman -R %s", (cmd + 4)); // ARCH
+	    } else if (strncmp(endi + 5, "debian", 6) == 0 || strncmp(endi, "debian", 6) == 0) {
+		sprintf(incm, "sudo apt remove %s", (cmd + 4)); // UBUNTU or DEBIAN
+	    } else if (strncmp(endi, "gentoo", 6) == 0) {
+		sprintf(incm, "sudo emerge --deselect %s", (cmd + 4)); // GENTOO
+	    } else if (strncmp(endi, "fedora", 6) == 0) {
+		sprintf(incm, "sudo dnf remove %s", (cmd + 4)); // FEDORA
+	    } else {
+	       	continue;
+	    }
+	    system(incm);
+	    if (strncmp(endi, "gentoo", 6) == 0) system("emerge --depclean");
+
+	// command ls
+	} else if (strncmp(cmd, "ls", 2) == 0) {
+	    pid_t pid = fork();
+	    if (pid == 0) {
+		li = 0;
+		lsar[li] = strtok(cmd, " ");
+		while (lsar[li] != NULL) { li++; lsar[li] = strtok(NULL, " "); }
+		execvp(lsar[0], lsar);
+	    } else {
+		wait(NULL);
+	    }
+
+	// command clear or pwd
+	} else if (strncmp(cmd, "clear", 5) == 0 || strncmp(cmd, "cls", 3) == 0) {
+		printf("\033[H\033[J");
+
+	// command mkdir
+	} else if (strncmp(cmd, "mkdir", 5) == 0 || strncmp(cmd, "md", 2) == 0) {
+		pid_t pid = fork();
+		if (pid == 0) {
+			li = 0;
+			mdar[li] = strtok(cmd, " ");
+			while (mdar[li] != NULL) { li++; mdar[li] = strtok(NULL, " "); }
+			mdar[0] = "mkdir";
+			execvp(mdar[0], mdar);
 		} else {
-			continue;
+			wait(NULL);
 		}
-		system(incm);
-		if (strncmp(endi, "gentoo", 6) == 0) system("emerge --depclean");
 
 	// other commands are redirected by the OS
 	} else {
