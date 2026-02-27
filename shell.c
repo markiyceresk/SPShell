@@ -10,6 +10,7 @@
 #include <wchar.h>
 #include <locale.h>
 #include <pwd.h>
+#include <fcntl.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <time.h>
@@ -31,6 +32,7 @@ short ns;
 char *lsar[128];
 short li;
 char *mdar[128];
+char *rear[512];
 
 int main() {
 	char h[128] = "/home/";
@@ -272,6 +274,24 @@ int main() {
 			execvp(mdar[0], mdar);
 		} else {
 			wait(NULL);
+		}
+
+	// command export
+	} else if (strncmp(cmd, "export", 6) == 0 || strncmp(cmd, "ex", 2) == 0) {
+		char *expo;
+		if (strncmp(cmd, "export", 6) == 0) {
+			expo = cmd + 7;
+		} else {
+			expo = cmd + 3;
+		}
+		char *fuex = strchr(expo, '=');
+		if (!fuex) {
+			printf("Usage: export var=value");
+		} else {
+			*fuex = '\0';
+			char *nm = expo;
+			char *vl = fuex + 1;
+			if (setenv(nm, vl, 1) != 0) perror("setenv");
 		}
 
 	// other commands are redirected by the OS
