@@ -33,19 +33,27 @@ char *lsar[128];
 short li;
 char *mdar[128];
 char *rear[512];
+char hn[128];
+char *inar[128];
 
 int main() {
 	char h[128] = "/home/";
+	char *login = getlogin();
+	if (!login) login = getenv("USER");
 	strcat(h, getlogin());
 	setvbuf(stdout, NULL, _IONBF, 0);
 	// write os id to variable "endi"
 	FILE *fidi = fopen("/etc/os-release", "r");
-	char line[256];
-	while (fgets(dist, sizeof(dist), fidi)) {
-		if (strncmp(dist, "ID=", 3) == 0) {
-			endi = dist + 3;
-			break;
+	if (fidi) {
+		char line[256];
+		while (fgets(dist, sizeof(dist), fidi)) {
+			if (strncmp(dist, "ID=", 3) == 0) {
+				endi = dist + 3;
+				break;
+			}
 		}
+	} else {
+		endi = "none";
 	}
 	fclose(fidi);
 	// print ASCII art
@@ -98,18 +106,20 @@ int main() {
 	// ----- command block -----
 
 	// command q (quit)
-	if (strncmp(cmd, "q", 1) == 0) {
-	    printf("\n");
+	if (strcmp(cmd, "exit") == 0) {
 	    free(cmd);
 	    break;
 
 	// command cd (change directory)
 	} else if (strncmp(cmd, "cd", 2) == 0) {
-	    if (strncmp(cmd + 3, "~", 1) == 0) {
-		chdir(h);
-	    } else {
-	        chdir(cmd + 3);
-	    }
+		if (strncmp(cmd + 3, "~", 1) == 0) {
+			sprintf(hn, "%s%s", h, cmd + 4);
+			if (chdir(hn) != 0) printf("Directory not found :(");
+		} else if (strncmp(cmd + 2, " ", 1)) {
+			if (chdir(h) != 0) printf("Directory not found :(");
+		} else {
+			if (chdir(cmd + 3) != 0) printf("Sorry, but i couldn't find your user directory :(");
+		}
 
 	// command help (have -s flag)
 	} else if (strncmp(cmd, "help", 4) == 0) {
@@ -120,15 +130,15 @@ int main() {
 	    }
 
 	// command sus
-	} else if (strncmp(cmd, "sus", 3) == 0) {
-	    printf("This looks kinda SUS...");
+	} else if (strcmp(cmd, "sus") == 0) {
+		printf("This looks kinda SUS...");
 
 	// command hi
-	} else if (strncmp(cmd, "hi", 2) == 0) {
+	} else if (strcmp(cmd, "hi") == 0) {
 		printf("Hello!");
 
 	// command news
-	} else if (strncmp(cmd, "news", 4) == 0) {
+	} else if (strcmp(cmd, "news") == 0) {
 		srand(time(NULL));
 		rnew = rand() % 10;
 		switch (rnew) {
@@ -165,7 +175,7 @@ int main() {
 		}
 
 	// command rps (rock paper scissors)
-	} else if (strncmp(cmd, "rps", 3) == 0) {
+	} else if (strcmp(cmd, "rps") == 0) {
 	    struct termios t;
 	    int sch = 0, cch, u;
             char b;
@@ -190,39 +200,49 @@ int main() {
 	    tcsetattr(0, TCSANOW, &t);
 
 	// command I am not a moron (reference to portal 2)
-	} else if (strncmp(cmd, "I am not a moron!", 17) == 0) {
+	} else if (strcmp(cmd, "I am not a moron!") == 0) {
 	    printf("Yes, you are!!!\n");
 	    sleep(1);
 	    printf("You are the moron, they built to make me an idiot!");
 
 	// command potato (reference to PWGood)
-	} else if (strncmp(cmd, "potato", 6) == 0) {
+	} else if (strcmp(cmd, "potato") == 0) {
 	    printf("Картошка!\n");
 	    sleep(1);
 	    printf("картошка\nкартошка\nкартошка!");
 
 	// command inst (install)
-	} else if (strncmp(cmd, "inst", 4) == 0) {
-	    char incm[256];
-	    if (strncmp(endi, "arch", 4) == 0 || strncmp(endi + 5, "arch", 4) == 0) {
-                sprintf(incm, "sudo pacman -S %s", (cmd + 5)); // ARCH
-            } else if (strncmp(endi + 5, "debian", 6) == 0 || strncmp(endi, "debian", 6) == 0) {
-                sprintf(incm, "sudo apt install %s", (cmd + 5)); // UBUNTU or DEBIAN
-            } else if (strncmp(endi, "gentoo", 6) == 0) {
-                sprintf(incm, "sudo emerge --ask %s", (cmd + 5)); // GENTOO
-            } else if (strncmp(endi, "fedora", 6) == 0) {
-                sprintf(incm, "sudo dnf install %s", (cmd + 5)); // FEDORA
-            } else {
-		continue;
-	    }
-	    system(incm);
+	} else if (strncmp(cmd, "inst ", 5) == 0) {
+		pid_t pid = fork();
+		if (pid == 0) {
+			li = 0;
+			char incm[128];
+			if (strncmp(endi, "arch", 4) == 0 || strncmp(endi + 5, "arch", 4) == 0) {
+				sprintf(incm, "sudo pacman -S %s", cmd + 5); // ARCH BASED
+        		} else if (strncmp(endi + 5, "debian", 6) == 0 || strncmp(endi, "debian", 6) == 0) {
+        			sprintf(incm, "sudo apt install %s", cmd + 5); // DEBIAN BASED
+        		} else if (strncmp(endi, "gentoo", 6) == 0) {
+        			sprintf(incm, "sudo emerge --ask %s", (cmd + 5)); // GENTOO
+        		} else if (strncmp(endi, "fedora", 6) == 0) {
+        			sprintf(incm, "sudo dnf install %s", (cmd + 5)); // FEDORA
+        		} else {
+				continue;
+			}
+			inar[li] = strtok(incm, " ");
+			while (inar[li] != NULL) { li++; inar[li] = strtok(NULL, " "); }
+			execvp(inar[0], inar);
+			perror("execvp failed");
+			break;
+		} else {
+			wait(NULL);
+		}
 
 	// command ua (update all)
-	} else if (strncmp(cmd, "ua", 2) == 0) {
+	} else if (strcmp(cmd, "ua") == 0) {
 	    if (strncmp(endi, "arch", 4) == 0 || strncmp(endi + 5, "arch", 4) == 0) {
 		system("sudo pacman -Syu"); // ARCH or CACHY
 	    } else if (strncmp(endi + 5, "debian", 6) == 0 || strncmp(endi, "debian", 6) == 0) {
-		system("sudo apt update"); // UBUNTU or DEBIAN
+		system("sudo apt update"); // DEBIAN BASED
 	    } else if (strncmp(endi, "gentoo", 6) == 0) {
 		system("sudo emerge --sync"); // GENTOO
 		system("sudo emerge -avuDN @world");
@@ -255,16 +275,18 @@ int main() {
 		lsar[li] = strtok(cmd, " ");
 		while (lsar[li] != NULL) { li++; lsar[li] = strtok(NULL, " "); }
 		execvp(lsar[0], lsar);
+		perror("execvp failed");
+		break;
 	    } else {
 		wait(NULL);
 	    }
 
 	// command clear or pwd
-	} else if (strncmp(cmd, "clear", 5) == 0 || strncmp(cmd, "cls", 3) == 0) {
+	} else if (strcmp(cmd, "clear") == 0 || strcmp(cmd, "cls") == 0) {
 		printf("\033[H\033[J");
 
 	// command mkdir
-	} else if (strncmp(cmd, "mkdir", 5) == 0 || strncmp(cmd, "md", 2) == 0) {
+	} else if (strncmp(cmd, "mkdir ", 6) == 0 || strncmp(cmd, "md ", 3) == 0) {
 		pid_t pid = fork();
 		if (pid == 0) {
 			li = 0;
@@ -272,12 +294,13 @@ int main() {
 			while (mdar[li] != NULL) { li++; mdar[li] = strtok(NULL, " "); }
 			mdar[0] = "mkdir";
 			execvp(mdar[0], mdar);
+			perror("execvp failed");
 		} else {
 			wait(NULL);
 		}
 
 	// command export
-	} else if (strncmp(cmd, "export", 6) == 0 || strncmp(cmd, "ex", 2) == 0) {
+	} else if (strncmp(cmd, "export ", 7) == 0 || strncmp(cmd, "ex ", 3) == 0) {
 		char *expo;
 		if (strncmp(cmd, "export", 6) == 0) {
 			expo = cmd + 7;
