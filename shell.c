@@ -21,11 +21,8 @@ char prm[512];
 char *cmd;
 char hostname[HOST_NAME_MAX];
 short rnew;
-short cch;
-int sch;
 char usin[128];
 struct termios oldt, newt;
-short ns;
 char *lsar[128];
 char *mdar[128];
 char *rear[512];
@@ -33,6 +30,23 @@ char *inar[128];
 
 int i;
 char s[256];
+
+struct exec {
+	char *all[256];
+	char *mkdir[128];
+} exec;
+
+struct cur {
+	int row;
+	int col;
+} cur;
+
+struct pid {
+	pid_t a;
+	pid_t b;
+	pid_t c;
+	pid_t d;
+} pid;
 
 struct dist {
 	char string[64];
@@ -56,8 +70,8 @@ void getuser() {
 }
 
 void package(char *packages) {
-	pid_t pid = fork();
-	if (pid == 0) {
+	pid.a = fork();
+	if (pid.a == 0) {
 		char *exec[256];
 		if (strncmp(dist.name, "arch", 4) == 0 || strncmp(dist.name + 5, "arch", 4) == 0) { // ARCH BASED
 			if (strncmp(cmd, "inst", 4) == 0) { char *exec[] = {"sudo", "pacman", "-S", packages, NULL}; }
@@ -135,15 +149,14 @@ int main() {
 	// ----- GREETING -----
 
 	// print greeting
-    int rows = 0, cols = 0;
     tcgetattr(STDIN_FILENO, &oldt);
     newt = oldt;
     newt.c_lflag &= ~(ICANON | ECHO);
     tcsetattr(STDIN_FILENO, TCSANOW, &newt);
     write(STDOUT_FILENO, "\033[6n", 4);
-	scanf("\033[%d;%dR", &rows, &cols);
+	scanf("\033[%d;%dR", &cur.row, &cur.col);
 	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-    if (cols > 1) printf("\n");
+    if (cur.col > 1) printf("\n");
 	gethostname(hostname, HOST_NAME_MAX);
 	getcwd(cwd, sizeof(cwd));
 	snprintf(prm, sizeof(prm), "%s | %s | %s $ ", user.name, hostname, cwd);
@@ -158,7 +171,7 @@ int main() {
 	// ----- command block -----
 
 	// command q (quit)
-	if (strcmp(cmd, "exit") == 0) {
+	if (strcmp(cmd, "q") == 0 || strcmp(cmd, "exit") == 0) {
 	    free(cmd);
 	    break;
 
@@ -193,33 +206,19 @@ int main() {
 	} else if (strncmp(cmd, "rem ", 3) == 0) {
         package(cmd + 4);
 
-	// command ls
-	} else if (strncmp(cmd, "ls", 2) == 0) {
-		pid_t pid = fork();
-		if (pid == 0) {
-			i = 0;
-			lsar[i] = strtok(cmd, " ");
-		while (lsar[i] != NULL) { i++; lsar[i] = strtok(NULL, " "); }
-			execvp(lsar[0], lsar);
-			perror("execvp failed");
-			break;
-		} else {
-			wait(NULL);
-		}
-
-	// clear or pwd
-	} else if (strcmp(cmd, "clear") == 0 || strcmp(cmd, "cls") == 0) {
+	// cls (made for windows users)
+	} else if (strcmp(cmd, "cls") == 0) {
 		printf("\033[H\033[J");
 
 	// mkdir
-	} else if (strncmp(cmd, "mkdir ", 6) == 0 || strncmp(cmd, "md ", 3) == 0) {
-		pid_t pid = fork();
-		if (pid == 0) {
+	} else if (strncmp(cmd, "md ", 3) == 0) {
+		pid.a = fork();
+		if (pid.a == 0) {
 			i = 0;
-			mdar[i] = strtok(cmd, " ");
-			while (mdar[i] != NULL) { i++; mdar[i] = strtok(NULL, " "); }
-			mdar[0] = "mkdir";
-			execvp(mdar[0], mdar);
+			exec.mkdir[i] = strtok(cmd, " ");
+			while (exec.mkdir[i] != NULL) { i++; exec.mkdir[i] = strtok(NULL, " "); }
+			exec.mkdir[0] = "mkdir";
+			execvp(exec.mkdir[0], exec.mkdir);
 			perror("execvp failed");
 		} else {
 			wait(NULL);
@@ -227,46 +226,46 @@ int main() {
 
 	// export
 	} else if (strncmp(cmd, "export ", 7) == 0 || strncmp(cmd, "ex ", 3) == 0) {
-		char *expo;
+		struct export { char *strall; char *all[256]; } export;
 		if (strncmp(cmd, "export", 6) == 0) {
-			expo = cmd + 7;
+			export.strall = cmd + 7;
 		} else {
-			expo = cmd + 3;
+			export.strall = cmd + 3;
 		}
-		char *fuex = strchr(expo, '=');
-		if (!fuex) {
-			printf("Usage: export var=value");
-		} else {
-			*fuex = '\0';
-			char *nm = expo;
-			char *vl = fuex + 1;
-			if (setenv(nm, vl, 1) != 0) perror("setenv");
-		}
+		i = 0;
+		export.all[i] = strtok(export.strall, "=");
+		export.all[1] = strtok(NULL, "\n");
+		if (setenv(export.all[0], export.all[1], 1) != 0) { perror("setenv"); }
+		printf("Успешно: %s теперь равно %s\n", export.all[0], getenv(export.all[0]));
 
 	// ----- GAMES -----
 
 	// command rps (rock paper scissors)
 	} else if (strcmp(cmd, "rps") == 0) {
+		struct choose {
+			short player;
+			short computer;
+			int score;
+		} choose;
 	    struct termios t;
-	    int sch = 0, cch, u;
-            char b;
+		char b;
 	    tcgetattr(0, &t);
 	    struct termios n = t;
 	    n.c_lflag &= ~(ICANON | ECHO);
 	    tcsetattr(0, TCSANOW, &n);
 	    srand(time(0));
-	    while (printf("1. Rock\n2. Paper\n3. Scissors\n4. Quit\n") && read(0, &b, 1) && b != '4') {
-		u = b - '0';
-		cch = rand() % 3 + 1;
-		printf("\nComputer: ");
-		if (cch == 1) printf("rock");
-		if (cch == 2) printf("paper");
-		if (cch == 3) printf("scissors");
-		printf(" | ");
-		if (u == cch) printf("Draw");
-		else if ((u % 3) + 1 == cch) { printf("You lost"); sch--; }
-		else { printf("You won"); sch++; }
-		printf(" | Score: %d\n\n", sch);
+		while (printf("1. Rock\n2. Paper\n3. Scissors\n4. Quit\n") && read(0, &choose.player, 1) && choose.player != '4') {
+			choose.player -= '0';
+			choose.computer = rand() % 3 + 1;
+			printf("\nComputer: ");
+			if (choose.computer == 1) { printf("rock"); }
+			else if (choose.computer == 2) { printf("paper"); }
+			else if (choose.computer == 3) { printf("scissors"); }
+			printf(" | ");
+			if (choose.player == choose.computer) printf("Draw");
+			else if ((choose.player % 3) + 1 == choose.computer) { printf("You lost"); choose.score--; }
+			else { printf("You won"); choose.score++; }
+			printf(" | Score: %d\n\n", choose.score);
 	    }
 	    tcsetattr(0, TCSANOW, &t);
 
@@ -331,7 +330,18 @@ int main() {
 
 	// other commands are redirected by the OS
 	} else {
-	    system(cmd);
+	    pid.a = fork();
+		if (pid.a == 0) {
+			i = 0;
+			exec.all[i] = strtok(cmd, " ");
+			while (exec.all[i] != NULL) { i++; exec.all[i] = strtok(NULL, " "); }
+			for (i = 0; exec.all[i] != NULL; i++) { if (exec.all[i][0] == '$') { char *val = getenv(exec.all[i] + 1); if (val) exec.all[i] = val; } }
+			execvp(exec.all[0], exec.all);
+			perror("execvp failed");
+			break;
+		} else {
+			wait(NULL);
+		}
 	}
 
 	// clear memory
